@@ -32,6 +32,8 @@ typedef enum
     NK_NUM,
     NK_ADD,
     NK_SUB,
+    NK_MUL,
+    NK_DIV,
 } NodeKind;
 
 typedef struct Node Node;

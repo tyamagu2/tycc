@@ -44,6 +44,13 @@ void gen_expr(Node *node)
     case NK_SUB:
         println("  sub rax, rdi");
         break;
+    case NK_MUL:
+        println("  imul rax, rdi");
+        break;
+    case NK_DIV:
+        println("  cqo"); // Set sign-extend of rax to rdx:rax.
+        println("  idiv rdi"); // Signed divide rdx:rax by rdi.
+        break;
     }
 
     push("rax");

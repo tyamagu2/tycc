@@ -43,25 +43,59 @@ Node *new_num(Token *tok)
     return node;
 }
 
+Node *expr(Token *tok, Token **end);
 Node *add(Token *tok, Token **end);
+Node *mul(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 
+// expr
+//  = mul
+Node *expr(Token *tok, Token **end)
+{
+    return add(tok, end);
+}
+
 // add
-//  = primary ("+" primary | "-" primary)*
+//  = mul ("+" mul | "-" mul)*
 Node *add(Token *tok, Token **end)
 {
-    Node *node = primary(tok, &tok);
+    Node *node = mul(tok, &tok);
 
     for (;;)
     {
         if (consume(tok, &tok, "+"))
         {
-            node = new_binary(NK_ADD, tok, node, primary(tok, &tok));
+            node = new_binary(NK_ADD, tok, node, mul(tok, &tok));
             continue;
         }
         if (consume(tok, &tok, "-"))
         {
-            node = new_binary(NK_SUB, tok, node, primary(tok, &tok));
+            node = new_binary(NK_SUB, tok, node, mul(tok, &tok));
+            continue;
+        }
+        break;
+    }
+
+    *end = tok;
+    return node;
+}
+
+// mul
+//  = primary ("*" primary | "/" primary)*
+Node *mul(Token *tok, Token **end)
+{
+    Node *node = primary(tok, &tok);
+
+    for (;;)
+    {
+        if (consume(tok, &tok, "*"))
+        {
+            node = new_binary(NK_MUL, tok, node, primary(tok, &tok));
+            continue;
+        }
+        if (consume(tok, &tok, "/"))
+        {
+            node = new_binary(NK_DIV, tok, node, primary(tok, &tok));
             continue;
         }
         break;

@@ -51,6 +51,12 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_SUB:
         puts("SUB:");
         break;
+    case NK_MUL:
+        puts("MUL:");
+        break;
+    case NK_DIV:
+        puts("DIV");
+        break;
     default:
         printf("INVALID_NODE_KIND=%d\n", node->kind);
     }

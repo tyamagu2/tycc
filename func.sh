@@ -16,3 +16,13 @@ assert() {
     exit 1
   fi
 }
+
+run() {
+  input="$1"
+
+  ./tycc "$input" > tmp.s
+  cc -o tmp tmp.s
+  ./tmp
+  echo $?
+}
+

@@ -32,7 +32,7 @@ static Token *new_token(TokenKind kind, char *str, int len)
 
 static int read_punct(char *p)
 {
-    if (strchr("+-", *p))
+    if (strchr("+-*/", *p))
     {
         return 1;
     }
@@ -71,7 +71,7 @@ Token *tokenize(char *p)
             continue;
         }
 
-        error_at(input, p, "invalid character");
+        error_at(input, p, "invalid token");
     }
 
     cur->next = new_token(TK_EOF, p, 0);
