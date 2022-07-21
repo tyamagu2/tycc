@@ -182,5 +182,12 @@ Node *primary(Token *tok, Token **end)
 Node *parse(Token *tok)
 {
     _start = tok;
-    return stmt(tok, &tok);
+
+    Node head;
+    Node *cur = &head;
+    while (tok->kind != TK_EOF)
+    {
+         cur = cur->next = stmt(tok, &tok);
+    }
+    return head.next;
 }
