@@ -47,6 +47,13 @@ Node *new_node(NodeKind kind, Token *tok)
     return node;
 }
 
+Node *new_unary(NodeKind kind, Token *tok, Node *expr)
+{
+    Node *node = new_node(kind, tok);
+    node->lhs = expr;
+    return node;
+}
+
 Node *new_binary(NodeKind kind, Token *tok, Node *lhs, Node *rhs)
 {
     Node *node = new_node(kind, tok);
@@ -137,7 +144,7 @@ Node *unary(Token *tok, Token **end)
     }
     if (consume(tok, &tok, "-"))
     {
-        return new_binary(NK_SUB, tok, new_num(NULL, 0), unary(tok, end));
+        return new_unary(NK_NEG, tok, unary(tok, end));
     }
     return primary(tok, end);
 }

@@ -30,11 +30,17 @@ void gen_expr(Node *node)
         return;
     }
 
-    // binary
+    if (node->lhs && node->rhs)
+    {
     gen_expr(node->lhs);
     gen_expr(node->rhs);
     pop("rdi");
     pop("rax");
+    } else if (node->lhs)
+    {
+        gen_expr(node->lhs);
+        pop("rax");
+    }
 
     switch (node->kind)
     {
@@ -50,6 +56,9 @@ void gen_expr(Node *node)
     case NK_DIV:
         println("  cqo"); // Set sign-extend of rax to rdx:rax.
         println("  idiv rdi"); // Signed divide rdx:rax by rdi.
+        break;
+    case NK_NEG:
+        println("  neg rax");
         break;
     }
 

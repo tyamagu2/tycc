@@ -57,17 +57,22 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_DIV:
         puts("DIV");
         break;
+    case NK_NEG:
+        puts("NEG");
+        break;
     default:
         printf("INVALID_NODE_KIND=%d\n", node->kind);
     }
 
-    if (node->lhs)
+    if (node->lhs && node->rhs)
     {
         dump_node(node->lhs, depth + 1, "LHS: ");
-    }
-    if (node->rhs)
-    {
         dump_node(node->rhs, depth + 1, "RHS: ");
+        return;
+    }
+    if (node->lhs)
+    {
+        dump_node(node->lhs, depth + 1, "OPERAND: ");
     }
 }
 

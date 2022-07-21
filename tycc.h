@@ -31,11 +31,13 @@ Token *tokenize(char *in);
 
 typedef enum
 {
-    NK_NUM,
+    NK_NUM, // Integer
     NK_ADD,
     NK_SUB,
     NK_MUL,
     NK_DIV,
+    NK_NEG, // Unary -
+
 } NodeKind;
 
 typedef struct Node Node;
