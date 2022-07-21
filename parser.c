@@ -55,16 +55,17 @@ Node *new_binary(NodeKind kind, Token *tok, Node *lhs, Node *rhs)
     return node;
 }
 
-Node *new_num(Token *tok)
+Node *new_num(Token *tok, int val)
 {
     Node *node = new_node(NK_NUM, tok);
-    node->val = tok->val;
+    node->val = val;
     return node;
 }
 
 Node *expr(Token *tok, Token **end);
 Node *add(Token *tok, Token **end);
 Node *mul(Token *tok, Token **end);
+Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 
 // expr
@@ -101,21 +102,21 @@ Node *add(Token *tok, Token **end)
 }
 
 // mul
-//  = primary ("*" primary | "/" primary)*
+//  = unary ("*" unary | "/" unary)*
 Node *mul(Token *tok, Token **end)
 {
-    Node *node = primary(tok, &tok);
+    Node *node = unary(tok, &tok);
 
     for (;;)
     {
         if (consume(tok, &tok, "*"))
         {
-            node = new_binary(NK_MUL, tok, node, primary(tok, &tok));
+            node = new_binary(NK_MUL, tok, node, unary(tok, &tok));
             continue;
         }
         if (consume(tok, &tok, "/"))
         {
-            node = new_binary(NK_DIV, tok, node, primary(tok, &tok));
+            node = new_binary(NK_DIV, tok, node, unary(tok, &tok));
             continue;
         }
         break;
@@ -125,6 +126,22 @@ Node *mul(Token *tok, Token **end)
     return node;
 }
 
+// unary
+//  = ("+" | "-")? unary
+//  | primary
+Node *unary(Token *tok, Token **end)
+{
+    if (consume(tok, &tok, "+"))
+    {
+        return unary(tok, end);
+    }
+    if (consume(tok, &tok, "-"))
+    {
+        return new_binary(NK_SUB, tok, new_num(NULL, 0), unary(tok, end));
+    }
+    return primary(tok, end);
+}
+
 // primary
 //  = num
 //  | "(" expr ")"
@@ -132,7 +149,7 @@ Node *primary(Token *tok, Token **end)
 {
     if (tok->kind == TK_NUM)
     {
-        Node *node = new_num(tok);
+        Node *node = new_num(tok, tok->val);
         *end = tok->next;
         return node;
     }
