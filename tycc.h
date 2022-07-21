@@ -1,3 +1,5 @@
+#include <stdarg.h>
+
 //
 // Tokenizer
 //
@@ -65,3 +67,10 @@ void codegen(Node *node);
 
 void dump_tokens(Token *tok);
 void dump_nodes(Node *node);
+
+//
+// Error reporting
+//
+
+void verror_at(char *input, char *loc, char *fmt, va_list ap);
+void error_at(char *input, char *loc, char *fmt, ...);

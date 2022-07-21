@@ -46,13 +46,13 @@ void dump_node(Node *node, int depth, char *prefix)
         printf("NUM(%d)\n", node->val);
         return;
     case NK_ADD:
-        puts("ADD:");
+        puts("ADD");
         break;
     case NK_SUB:
-        puts("SUB:");
+        puts("SUB");
         break;
     case NK_MUL:
-        puts("MUL:");
+        puts("MUL");
         break;
     case NK_DIV:
         puts("DIV");

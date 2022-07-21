@@ -1,8 +1,12 @@
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "tycc.h"
+
+// For error reporting.
+static Token *_start;
 
 bool equal(Token *tok, char *op)
 {
@@ -18,6 +22,21 @@ Token *consume(Token *tok, Token **end, char *op)
 
     *end = tok->next;
     return tok;
+}
+
+static void error_token(Token *tok, char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    verror_at(_start->str, tok->str, fmt, ap);
+}
+
+void expect(Token *tok, Token **end, char *op)
+{
+    if (!consume(tok, end, op))
+    {
+        error_token(tok, "expected %s", op);
+    }
 }
 
 Node *new_node(NodeKind kind, Token *tok)
@@ -49,10 +68,11 @@ Node *mul(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 
 // expr
-//  = mul
+//  = add
 Node *expr(Token *tok, Token **end)
 {
-    return add(tok, end);
+    Node *node = add(tok, end);
+    return node;
 }
 
 // add
@@ -106,8 +126,8 @@ Node *mul(Token *tok, Token **end)
 }
 
 // primary
-//  = number
-//  | add
+//  = num
+//  | "(" expr ")"
 Node *primary(Token *tok, Token **end)
 {
     if (tok->kind == TK_NUM)
@@ -117,10 +137,15 @@ Node *primary(Token *tok, Token **end)
         return node;
     }
 
-    return add(tok, &tok);
+    expect(tok, &tok, "(");
+    Node *node = expr(tok, &tok);
+    expect(tok, &tok, ")");
+    *end = tok;
+    return node;
 }
 
 Node *parse(Token *tok)
 {
-    return add(tok, &tok);
+    _start = tok;
+    return expr(tok, &tok);
 }

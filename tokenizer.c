@@ -6,21 +6,6 @@
 
 #include "tycc.h"
 
-static void error_at(char *input, char *loc, char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-
-    int pos = loc - input;
-    fprintf(stderr, "%s\n", input);
-    fprintf(stderr, "%*s", pos, ""); // Print pos spaces.
-    fprintf(stderr, "^ ");
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-
-    exit(1);
-}
-
 static Token *new_token(TokenKind kind, char *str, int len)
 {
     Token *tok = calloc(1, sizeof(Token));
@@ -30,9 +15,11 @@ static Token *new_token(TokenKind kind, char *str, int len)
     return tok;
 }
 
+// read_punct reads a punctuator token from p and return its length.
+// Note that it does not update p.
 static int read_punct(char *p)
 {
-    if (strchr("+-*/", *p))
+    if (strchr("+-*/()", *p))
     {
         return 1;
     }
