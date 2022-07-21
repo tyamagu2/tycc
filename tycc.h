@@ -37,7 +37,7 @@ typedef enum
     NK_MUL,
     NK_DIV,
     NK_NEG, // Unary -
-
+    NK_EXPR_STMT, // Expression statement
 } NodeKind;
 
 typedef struct Node Node;

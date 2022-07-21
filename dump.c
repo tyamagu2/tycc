@@ -60,6 +60,9 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_NEG:
         puts("NEG");
         break;
+    case NK_EXPR_STMT:
+        dump_node(node->lhs, depth, "EXPR_STMT: ");
+        return;
     default:
         printf("INVALID_NODE_KIND=%d\n", node->kind);
     }

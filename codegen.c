@@ -65,6 +65,16 @@ void gen_expr(Node *node)
     push("rax");
 }
 
+void gen_stmt(Node *node)
+{
+    switch (node->kind)
+    {
+    case NK_EXPR_STMT:
+        gen_expr(node->lhs);
+        break;
+    }
+}
+
 void codegen(Node *node)
 {
     println(".intel_syntax noprefix");
@@ -73,7 +83,7 @@ void codegen(Node *node)
 
     while (node)
     {
-        gen_expr(node);
+        gen_stmt(node);
         pop("rax");
         node = node->next;
     }

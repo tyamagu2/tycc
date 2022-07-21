@@ -69,11 +69,22 @@ Node *new_num(Token *tok, int val)
     return node;
 }
 
+Node *stmt(Token  *tok, Token **end);
 Node *expr(Token *tok, Token **end);
 Node *add(Token *tok, Token **end);
 Node *mul(Token *tok, Token **end);
 Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
+
+// stmt
+//  = expr ";"
+Node *stmt(Token *tok, Token **end)
+{
+    Node *node = new_unary(NK_EXPR_STMT, tok, expr(tok, &tok));
+    expect(tok, &tok, ";");
+    *end = tok;
+    return node;
+}
 
 // expr
 //  = add
@@ -171,5 +182,5 @@ Node *primary(Token *tok, Token **end)
 Node *parse(Token *tok)
 {
     _start = tok;
-    return expr(tok, &tok);
+    return stmt(tok, &tok);
 }

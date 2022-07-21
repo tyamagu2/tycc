@@ -19,7 +19,7 @@ static Token *new_token(TokenKind kind, char *str, int len)
 // Note that it does not update p.
 static int read_punct(char *p)
 {
-    if (strchr("+-*/()", *p))
+    if (strchr("+-*/();", *p))
     {
         return 1;
     }
