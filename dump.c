@@ -6,15 +6,18 @@ static void dump_token(Token *tok)
 {
     switch (tok->kind)
     {
+    case TK_EOF:
+        puts("EOF");
+        return;
     case TK_PUNCT:
         printf("PUNCT");
         break;
     case TK_NUM:
         printf("NUM");
         break;
-    case TK_EOF:
-        puts("EOF");
-        return;
+    case TK_IDENT:
+        printf("IDENT");
+        break;
     default:
         printf("INVALID_TOKEN_KIND=%d", tok->kind);
     }
@@ -46,22 +49,18 @@ void dump_node(Node *node, int depth, char *prefix)
         printf("NUM(%d)\n", node->val);
         return;
     case NK_ADD:
-        puts("ADD");
-        break;
     case NK_SUB:
-        puts("SUB");
-        break;
     case NK_MUL:
-        puts("MUL");
-        break;
     case NK_DIV:
-        puts("DIV");
-        break;
     case NK_NEG:
-        puts("NEG");
+    case NK_ASSIGN:
+        puts(node_kind_name(node->kind));
         break;
     case NK_EXPR_STMT:
         dump_node(node->lhs, depth, "EXPR_STMT: ");
+        return;
+    case NK_LVAR:
+        printf("LVAR(%.*s)\n", node->token->len, node->token->str);
         return;
     default:
         printf("INVALID_NODE_KIND=%d\n", node->kind);
@@ -79,13 +78,23 @@ void dump_node(Node *node, int depth, char *prefix)
     }
 }
 
-void dump_nodes(Node *node)
+void dump_nodes(Function *prog)
 {
     puts("----NODES----");
+    Node *node = prog->body;
     while (node)
     {
         dump_node(node, 0, "");
         node = node->next;
+    }
+    puts("-------------");
+
+    puts("----LVARS----");
+    LVar *lvar = prog->locals;
+    while (lvar)
+    {
+        printf("%.*s\n", lvar->len, lvar->name);
+        lvar = lvar->next;
     }
     puts("-------------");
 }

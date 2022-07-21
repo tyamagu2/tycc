@@ -1,7 +1,22 @@
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "tycc.h"
+
+static void error(char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
+static void error_node(Node *node, char *msg)
+{
+    error("%s: %s(%.*s)", msg, node_kind_name(node->kind), node->token->len, node->token->str);
+}
 
 static void println(char *fmt, ...)
 {
@@ -21,12 +36,38 @@ void pop(char *s)
     println("  pop %s", s);
 }
 
+void push_lvar_addr(Node *node)
+{
+    if (node->kind != NK_LVAR)
+    {
+        error_node(node, "the left hand side of an assignment is not a local variable");
+    }
+
+    println("  mov rax, rbp");
+    println("  sub rax, %d", node->lvar->offset);
+    push("rax");
+}
+
 void gen_expr(Node *node)
 {
     switch (node->kind)
     {
     case NK_NUM:
         println("  push %d", node->val);
+        return;
+    case NK_LVAR:
+        push_lvar_addr(node);
+        pop("rax");
+        println("  mov rax, [rax]");
+        push("rax");
+        return;
+    case NK_ASSIGN:
+        push_lvar_addr(node->lhs);
+        gen_expr(node->rhs);
+        pop("rdi");
+        pop("rax");
+        println("  mov [rax], rdi");
+        push("rdi");
         return;
     }
 
@@ -75,12 +116,30 @@ void gen_stmt(Node *node)
     }
 }
 
-void codegen(Node *node)
+static int assign_lvar_offset(Function *f)
+{
+    int offset = 0;
+    for (LVar *v = f->locals; v; v = v->next)
+    {
+        offset += 8;
+        v->offset = offset;
+    }
+    return offset;
+}
+
+void codegen(Function *prog)
 {
     println(".intel_syntax noprefix");
     println(".globl main");
     println("main:");
 
+    // Prologue
+    push("rbp"); // rbp is a callee-saved register and its value must be preserved.
+    println("  mov rbp, rsp");
+    int offset = assign_lvar_offset(prog);
+    println("  sub rsp, %d", offset);
+
+    Node *node = prog->body;
     while (node)
     {
         gen_stmt(node);
@@ -88,5 +147,8 @@ void codegen(Node *node)
         node = node->next;
     }
 
+    // Epilogue
+    println("  mov rsp, rbp");
+    pop("rbp"); // Restore rbp.
     println("  ret");
 }

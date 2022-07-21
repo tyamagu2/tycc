@@ -8,6 +8,31 @@
 // For error reporting.
 static Token *_start;
 
+char *node_kind_name(NodeKind kind)
+{
+    switch (kind)
+    {
+    case NK_NUM:
+        return "NUM";
+    case NK_ADD:
+        return "ADD";
+    case NK_SUB:
+        return "SUB";
+    case NK_MUL:
+        return "MUL";
+    case NK_DIV:
+        return "DIV";
+    case NK_NEG:
+        return "NEG";
+    case NK_EXPR_STMT:
+        return "EXPR_STMT";
+    case NK_ASSIGN:
+        return "ASSIGN";
+    case NK_LVAR:
+        return "LVAR";
+    }
+}
+
 bool equal(Token *tok, char *op)
 {
     return tok->len == strlen(op) && memcmp(tok->str, op, tok->len) == 0;
@@ -69,8 +94,50 @@ Node *new_num(Token *tok, int val)
     return node;
 }
 
-Node *stmt(Token  *tok, Token **end);
+// locals is a list of local variables created during parsing.
+LVar *locals;
+
+static LVar *new_lvar(Token *tok)
+{
+    LVar *lvar = calloc(1, sizeof(LVar));
+    lvar->name = tok->str;
+    lvar->len = tok->len;
+
+    // Prepend lvar to locals.
+    lvar->next = locals;
+    locals = lvar;
+    return lvar;
+}
+
+static LVar *find_lvar(Token *tok)
+{
+    for (LVar *lvar = locals; lvar; lvar = lvar->next)
+    {
+        if (lvar->len == tok->len && memcmp(lvar->name, tok->str, tok->len) == 0)
+        {
+            return lvar;
+        }
+    }
+    return NULL;
+}
+
+static Node *new_lvar_node(Token *tok)
+{
+    Node *node = new_node(NK_LVAR, tok);
+    LVar *lvar = find_lvar(tok);
+    if (lvar)
+    {
+        node->lvar = lvar;
+        return node;
+    }
+    lvar = new_lvar(tok);
+    node->lvar = lvar;
+    return node;
+}
+
+Node *stmt(Token *tok, Token **end);
 Node *expr(Token *tok, Token **end);
+Node *assign(Token *tok, Token **end);
 Node *add(Token *tok, Token **end);
 Node *mul(Token *tok, Token **end);
 Node *unary(Token *tok, Token **end);
@@ -87,10 +154,22 @@ Node *stmt(Token *tok, Token **end)
 }
 
 // expr
-//  = add
+//  = assign
 Node *expr(Token *tok, Token **end)
 {
-    Node *node = add(tok, end);
+    return assign(tok, end);
+}
+
+// assign
+//  = add (= assign)?
+Node *assign(Token *tok, Token **end)
+{
+    Node *node = add(tok, &tok);
+    if (consume(tok, &tok, "="))
+    {
+        node = new_binary(NK_ASSIGN, tok, node, assign(tok, &tok));
+    }
+    *end = tok;
     return node;
 }
 
@@ -162,12 +241,19 @@ Node *unary(Token *tok, Token **end)
 
 // primary
 //  = num
+//  | ident
 //  | "(" expr ")"
 Node *primary(Token *tok, Token **end)
 {
     if (tok->kind == TK_NUM)
     {
         Node *node = new_num(tok, tok->val);
+        *end = tok->next;
+        return node;
+    }
+    if (tok->kind == TK_IDENT)
+    {
+        Node *node = new_lvar_node(tok);
         *end = tok->next;
         return node;
     }
@@ -179,7 +265,7 @@ Node *primary(Token *tok, Token **end)
     return node;
 }
 
-Node *parse(Token *tok)
+Function *parse(Token *tok)
 {
     _start = tok;
 
@@ -187,7 +273,12 @@ Node *parse(Token *tok)
     Node *cur = &head;
     while (tok->kind != TK_EOF)
     {
-         cur = cur->next = stmt(tok, &tok);
+        cur = cur->next = stmt(tok, &tok);
     }
-    return head.next;
+
+    // For now, treat as if everything is inside the main function.
+    Function *f = calloc(1, sizeof(Function));
+    f->body = head.next;
+    f->locals = locals;
+    return f;
 }

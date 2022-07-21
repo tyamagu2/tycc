@@ -19,13 +19,13 @@ int main(int argc, char **argv)
         dump_tokens(tok);
     }
 
-    Node *node = parse(tok);
+    Function *prog = parse(tok);
     if (dump)
     {
-        dump_nodes(node);
+        dump_nodes(prog);
     }
 
-    codegen(node);
+    codegen(prog);
 
     return 0;
 }

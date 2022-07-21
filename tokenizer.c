@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,15 +16,46 @@ static Token *new_token(TokenKind kind, char *str, int len)
     return tok;
 }
 
-// read_punct reads a punctuator token from p and return its length.
-// Note that it does not update p.
-static int read_punct(char *p)
+// is_punct returns the length of the punctuator at p.
+// It returns 0 if p does not point a valid punctuator.
+static int is_punct(char *p)
 {
-    if (strchr("+-*/();", *p))
+    if (strchr("+-*/();=", *p))
     {
         return 1;
     }
     return 0;
+}
+
+// is_ident1 returns true if c is valid as the first leter of an identifier.
+static bool is_ident1(char c)
+{
+    return ('a' <= c && c <= 'z') ||
+           ('A' <= c && c <= 'Z') ||
+           c == '_';
+}
+
+// is_ident2 returns true if c is valid as a non-first letter of an identifier.
+static bool is_ident2(char c)
+{
+    return is_ident1(c) || ('0' <= c && c <= '9');
+}
+
+// is_ident returns the length of the identifier at p.
+// It returns 0 if p does not point to a valid identifier.
+static int is_ident(char *p)
+{
+    char *from = p;
+    if (!is_ident1(*p))
+    {
+        return 0;
+    }
+    p++;
+    while (is_ident2(*p))
+    {
+        p++;
+    }
+    return p - from;
 }
 
 Token *tokenize(char *p)
@@ -41,6 +73,14 @@ Token *tokenize(char *p)
             continue;
         }
 
+        int ident_len = is_ident(p);
+        if (ident_len > 0)
+        {
+            cur = cur->next = new_token(TK_IDENT, p, ident_len);
+            p += ident_len;
+            continue;
+        }
+
         if (isdigit(*p))
         {
             cur = cur->next = new_token(TK_NUM, p, 0);
@@ -50,7 +90,7 @@ Token *tokenize(char *p)
             continue;
         }
 
-        int punct_len = read_punct(p);
+        int punct_len = is_punct(p);
         if (punct_len > 0)
         {
             cur = cur->next = new_token(TK_PUNCT, p, punct_len);
