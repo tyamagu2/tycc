@@ -157,17 +157,36 @@ void gen_stmt(Node *node)
         pop("rbp"); // Restore rbp.
         println("  ret");
         return;
-    case NK_WHILE:
+    case NK_IF:
+    {
         int c = count();
-        println(".Lbegin%d:", c);
         gen_expr(node->cond);
         pop("rax");
         println("  cmp rax, 0");
-        println("  je .Lend%d", c);
+        println("  je .L.else%d", c);
         gen_stmt(node->then);
-        println("  jmp .Lbegin%d", c);
-        println(".Lend%d:", c);
+        println("  jmp .L.end%d", c);
+        println(".L.else%d:", c);
+        if (node->els)
+        {
+            gen_stmt(node->els);
+        }
+        println(".L.end%d:", c);
         return;
+    }
+    case NK_WHILE:
+    {
+        int c = count();
+        println(".L.begin%d:", c);
+        gen_expr(node->cond);
+        pop("rax");
+        println("  cmp rax, 0");
+        println("  je .L.end%d", c);
+        gen_stmt(node->then);
+        println("  jmp .L.begin%d", c);
+        println(".L.end%d:", c);
+        return;
+    }
     case NK_EXPR_STMT:
         gen_expr(node->lhs);
         break;

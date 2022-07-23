@@ -72,6 +72,15 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_EXPR_STMT:
         dump_node(node->lhs, depth, "EXPR_STMT: ");
         return;
+    case NK_IF:
+        puts(node_kind_name(node->kind));
+        dump_node(node->cond, depth + 1, "COND: ");
+        dump_node(node->then, depth + 1, "THEN: ");
+        if (node->els)
+        {
+            dump_node(node->els, depth + 1, "ELSE: ");
+        }
+        return;
     case NK_WHILE:
         puts(node_kind_name(node->kind));
         dump_node(node->cond, depth + 1, "COND: ");
