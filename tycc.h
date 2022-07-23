@@ -62,6 +62,7 @@ typedef enum
     NK_GT,        // >
     NK_GE,        // >=
     NK_RETURN,    // return
+    NK_WHILE      // while
 } NodeKind;
 
 typedef struct Node Node;
@@ -75,6 +76,10 @@ struct Node
     Node *lhs; // Left-hand side
     Node *rhs; // Right-hand side
 
+    // For NK_WHILE
+    Node *cond;
+    Node *then;
+    
     // For NK_NUM
     int val;
 

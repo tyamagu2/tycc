@@ -67,10 +67,15 @@ void dump_node(Node *node, int depth, char *prefix)
         break;
     case NK_RETURN:
         puts(node_kind_name(node->kind));
-        dump_node(node->lhs, depth+1, "EXPR: ");
+        dump_node(node->lhs, depth + 1, "EXPR: ");
         return;
     case NK_EXPR_STMT:
         dump_node(node->lhs, depth, "EXPR_STMT: ");
+        return;
+    case NK_WHILE:
+        puts(node_kind_name(node->kind));
+        dump_node(node->cond, depth + 1, "COND: ");
+        dump_node(node->then, depth + 1, "THEN: ");
         return;
     case NK_LVAR:
         printf("LVAR(%.*s)\n", node->token->len, node->token->str);

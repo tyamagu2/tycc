@@ -46,3 +46,4 @@ assert 1 'return 1; 2; 3;'
 assert 2 '1; return 2; 3;'
 assert 3 '1; 2; return 3;'
 
+assert 10 'i=0; while(i<10) i=i+1; return i;'

@@ -44,9 +44,20 @@ char *node_kind_name(NodeKind kind)
         return "GE";
     case NK_RETURN:
         return "RETURN";
+    case NK_WHILE:
+        return "WHILE";
     }
 
     return "UNKNOWN";
+}
+
+bool equal_keyword(Token *tok, char *kw)
+{
+    if (tok->kind != TK_KEYWORD)
+    {
+        return false;
+    }
+    return equal(tok, kw);
 }
 
 Token *consume(Token *tok, Token **end, char *op)
@@ -81,6 +92,18 @@ void expect(Token *tok, Token **end, char *op)
     if (!consume(tok, end, op))
     {
         error_token(tok, "expected %s", op);
+    }
+}
+
+void expect_keyword(Token *tok, Token **end, char *kw)
+{
+    if (tok->kind != TK_KEYWORD)
+    {
+        error_token(tok, "expected a keyword");
+    }
+    if (!consume(tok, end, kw))
+    {
+        error_token(tok, "expected %s", kw);
     }
 }
 
@@ -156,6 +179,7 @@ static Node *new_lvar_node(Token *tok)
 }
 
 Node *stmt(Token *tok, Token **end);
+Node *while_stmt(Token *tok, Token **end);
 Node *expr(Token *tok, Token **end);
 Node *assign(Token *tok, Token **end);
 Node *equality(Token *tok, Token **end);
@@ -166,7 +190,8 @@ Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 
 // stmt
-//  = return expr ";"
+//  = "return" expr ";"
+//  | while_stmt
 //  | expr ";"
 Node *stmt(Token *tok, Token **end)
 {
@@ -178,8 +203,31 @@ Node *stmt(Token *tok, Token **end)
         return node;
     }
 
+    if (equal_keyword(tok, "while"))
+    {
+        return while_stmt(tok, end);
+    }
+
     Node *node = new_unary(NK_EXPR_STMT, tok, expr(tok, &tok));
     expect(tok, &tok, ";");
+    *end = tok;
+    return node;
+}
+
+Node *while_stmt(Token *tok, Token **end)
+{
+    expect_keyword(tok, &tok, "while");
+
+    Node *node = new_node(NK_WHILE, tok);
+
+    expect(tok, &tok, "(");
+
+    node->cond = expr(tok, &tok);
+
+    expect(tok, &tok, ")");
+
+    node->then = stmt(tok, &tok);
+
     *end = tok;
     return node;
 }

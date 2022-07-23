@@ -18,6 +18,12 @@ static void error_node(Node *node, char *msg)
     error("%s: %s(%.*s)", msg, node_kind_name(node->kind), node->token->len, node->token->str);
 }
 
+static int count()
+{
+    static int cnt;
+    cnt++;
+    return cnt;
+}
 static void println(char *fmt, ...)
 {
     va_list ap;
@@ -150,6 +156,17 @@ void gen_stmt(Node *node)
         println("  mov rsp, rbp");
         pop("rbp"); // Restore rbp.
         println("  ret");
+        return;
+    case NK_WHILE:
+        int c = count();
+        println(".Lbegin%d:", c);
+        gen_expr(node->cond);
+        pop("rax");
+        println("  cmp rax, 0");
+        println("  je .Lend%d", c);
+        gen_stmt(node->then);
+        println("  jmp .Lbegin%d", c);
+        println(".Lend%d:", c);
         return;
     case NK_EXPR_STMT:
         gen_expr(node->lhs);

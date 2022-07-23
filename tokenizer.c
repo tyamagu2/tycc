@@ -28,7 +28,7 @@ static bool starts_with(const char *p, const char *prefix)
 
 static bool is_keyword(Token *tok)
 {
-    static char *kw[] = {"return"};
+    static char *kw[] = {"return", "while"};
     for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++)
     {
         if (equal(tok, kw[i]))
@@ -141,7 +141,7 @@ Token *tokenize(char *p)
     }
 
     cur->next = new_token(TK_EOF, p, 0);
-    
+
     convert_to_keywords(head.next);
 
     return head.next;
