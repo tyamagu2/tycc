@@ -42,14 +42,11 @@ char *node_kind_name(NodeKind kind)
         return "GT";
     case NK_GE:
         return "GE";
+    case NK_RETURN:
+        return "RETURN";
     }
 
     return "UNKNOWN";
-}
-
-bool equal(Token *tok, char *op)
-{
-    return tok->len == strlen(op) && memcmp(tok->str, op, tok->len) == 0;
 }
 
 Token *consume(Token *tok, Token **end, char *op)
@@ -61,6 +58,15 @@ Token *consume(Token *tok, Token **end, char *op)
 
     *end = tok->next;
     return tok;
+}
+
+Token *consume_keyword(Token *tok, Token **end, char *kw)
+{
+    if (tok->kind != TK_KEYWORD)
+    {
+        return NULL;
+    }
+    return consume(tok, end, kw);
 }
 
 static void error_token(Token *tok, char *fmt, ...)
@@ -160,9 +166,18 @@ Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 
 // stmt
-//  = expr ";"
+//  = return expr ";"
+//  | expr ";"
 Node *stmt(Token *tok, Token **end)
 {
+    if (consume_keyword(tok, &tok, "return"))
+    {
+        Node *node = new_unary(NK_RETURN, tok, expr(tok, &tok));
+        expect(tok, &tok, ";");
+        *end = tok;
+        return node;
+    }
+
     Node *node = new_unary(NK_EXPR_STMT, tok, expr(tok, &tok));
     expect(tok, &tok, ";");
     *end = tok;

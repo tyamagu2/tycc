@@ -7,6 +7,11 @@
 
 #include "tycc.h"
 
+bool equal(Token *tok, char *op)
+{
+    return tok->len == strlen(op) && memcmp(tok->str, op, tok->len) == 0;
+}
+
 static Token *new_token(TokenKind kind, char *str, int len)
 {
     Token *tok = calloc(1, sizeof(Token));
@@ -19,6 +24,31 @@ static Token *new_token(TokenKind kind, char *str, int len)
 static bool starts_with(const char *p, const char *prefix)
 {
     return memcmp(p, prefix, strlen(prefix)) == 0;
+}
+
+static bool is_keyword(Token *tok)
+{
+    static char *kw[] = {"return"};
+    for (int i = 0; i < sizeof(kw) / sizeof(*kw); i++)
+    {
+        if (equal(tok, kw[i]))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void convert_to_keywords(Token *tok)
+{
+    while (tok)
+    {
+        if (tok->kind == TK_IDENT && is_keyword(tok))
+        {
+            tok->kind = TK_KEYWORD;
+        }
+        tok = tok->next;
+    }
 }
 
 // is_punct returns the length of the punctuator at p.
@@ -111,5 +141,8 @@ Token *tokenize(char *p)
     }
 
     cur->next = new_token(TK_EOF, p, 0);
+    
+    convert_to_keywords(head.next);
+
     return head.next;
 }

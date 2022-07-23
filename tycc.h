@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <stdbool.h>
 
 //
 // Tokenizer
@@ -10,6 +11,7 @@ typedef enum
     TK_PUNCT,
     TK_NUM,
     TK_IDENT,
+    TK_KEYWORD,
 } TokenKind;
 
 typedef struct Token Token;
@@ -25,6 +27,8 @@ struct Token
 };
 
 Token *tokenize(char *in);
+
+bool equal(Token *tok, char *op);
 
 //
 // Parser
@@ -42,11 +46,11 @@ struct LVar
 
 typedef enum
 {
-    NK_NUM, // Integer
-    NK_ADD,
-    NK_SUB,
-    NK_MUL,
-    NK_DIV,
+    NK_NUM,       // Integer
+    NK_ADD,       // +
+    NK_SUB,       // -
+    NK_MUL,       // *
+    NK_DIV,       // /
     NK_NEG,       // Unary -
     NK_EXPR_STMT, // Expression statement
     NK_ASSIGN,    // Assignment
@@ -57,6 +61,7 @@ typedef enum
     NK_LE,        // <=
     NK_GT,        // >
     NK_GE,        // >=
+    NK_RETURN,    // return
 } NodeKind;
 
 typedef struct Node Node;

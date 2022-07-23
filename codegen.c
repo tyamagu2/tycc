@@ -144,6 +144,13 @@ void gen_stmt(Node *node)
 {
     switch (node->kind)
     {
+    case NK_RETURN:
+        gen_expr(node->lhs);
+        pop("rax");
+        println("  mov rsp, rbp");
+        pop("rbp"); // Restore rbp.
+        println("  ret");
+        return;
     case NK_EXPR_STMT:
         gen_expr(node->lhs);
         break;

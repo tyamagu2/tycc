@@ -2,50 +2,47 @@
 
 source ./func.sh
 
-assert 0 '0;'
-assert 42 '42;'
+assert 42 'return 42;'
 
-assert 10 '7 + 3;';
-assert 4 '7-3;';
-assert 14 '13+7-5-1;';
+assert 10 'return 7 + 3;';
+assert 4 'return 7-3;';
+assert 14 'return 13+7-5-1;';
 
-assert 47 '5+6*7;'
-assert 10 '5*6/3;'
-assert 15 '5 * (9 - 6);'
-assert 4 '( 3+5 )/2;'
+assert 47 'return 5+6*7;'
+assert 10 'return 5*6/3;'
+assert 15 'return 5 * (9 - 6);'
+assert 4 'return ( 3+5 )/2;'
 
-assert 10 '-10+20;'
-assert 10 '- -10;'
-assert 10 '- - +10;'
+assert 10 'return -10+20;'
+assert 10 'return - -10;'
+assert 10 'return - - +10;'
 
-assert 5 '3; 1+4;'
+assert 3 'return a123=3;'
+assert 8 'abc1=3; xyz9=5; return abc1+xyz9;'
+assert 6 'abcd=bcde=3; return abcd+bcde;'
+assert 5 'return _abc=_xyz3=ddd=5;'
 
-assert 3 'a=3;'
-assert 8 'a=3; z=5; a+z;'
-assert 6 'a=b=3; a+b;'
+assert 0 'return 0==1;'
+assert 1 'return 42==42;'
+assert 1 'return 0!=1;'
+assert 0 'return 42!=42;'
+assert 0 'return 1==2==2;'
+assert 1 'return 1!=2!=0;'
 
-assert 3 'ab123=3;'
-assert 8 'abc1=3; xyz9=5; abc1+xyz9;'
-assert 6 'abcd=bcde=3; abcd+bcde;'
-assert 5 '_abc=_xyz3=ddd=5;'
+assert 1 'return 0<1;'
+assert 0 'return 1<1;'
+assert 0 'return 2<1;'
+assert 1 'return 0<=1;'
+assert 1 'return 1<=1;'
+assert 0 'return 2<=1;'
+assert 1 'return 1>0;'
+assert 0 'return 1>1;'
+assert 0 'return 1>2;'
+assert 1 'return 1>=0;'
+assert 1 'return 1>=1;'
+assert 0 'return 1>=2;'
 
-assert 0 '0==1;'
-assert 1 '42==42;'
-assert 1 '0!=1;'
-assert 0 '42!=42;'
-assert 0 '1==2==2;'
-assert 1 '1!=2!=0;'
+assert 1 'return 1; 2; 3;'
+assert 2 '1; return 2; 3;'
+assert 3 '1; 2; return 3;'
 
-assert 1 '0<1;'
-assert 0 '1<1;'
-assert 0 '2<1;'
-assert 1 '0<=1;'
-assert 1 '1<=1;'
-assert 0 '2<=1;'
-
-assert 1 '1>0;'
-assert 0 '1>1;'
-assert 0 '1>2;'
-assert 1 '1>=0;'
-assert 1 '1>=1;'
-assert 0 '1>=2;'

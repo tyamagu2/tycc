@@ -18,6 +18,9 @@ static void dump_token(Token *tok)
     case TK_IDENT:
         printf("IDENT");
         break;
+    case TK_KEYWORD:
+        printf("KEYWORD");
+        break;
     default:
         printf("INVALID_TOKEN_KIND=%d", tok->kind);
     }
@@ -62,6 +65,10 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_GE:
         puts(node_kind_name(node->kind));
         break;
+    case NK_RETURN:
+        puts(node_kind_name(node->kind));
+        dump_node(node->lhs, depth+1, "EXPR: ");
+        return;
     case NK_EXPR_STMT:
         dump_node(node->lhs, depth, "EXPR_STMT: ");
         return;
