@@ -54,6 +54,12 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_DIV:
     case NK_NEG:
     case NK_ASSIGN:
+    case NK_EQ:
+    case NK_NE:
+    case NK_LT:
+    case NK_LE:
+    case NK_GT:
+    case NK_GE:
         puts(node_kind_name(node->kind));
         break;
     case NK_EXPR_STMT:

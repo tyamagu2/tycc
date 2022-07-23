@@ -73,11 +73,12 @@ void gen_expr(Node *node)
 
     if (node->lhs && node->rhs)
     {
-    gen_expr(node->lhs);
-    gen_expr(node->rhs);
-    pop("rdi");
-    pop("rax");
-    } else if (node->lhs)
+        gen_expr(node->lhs);
+        gen_expr(node->rhs);
+        pop("rdi");
+        pop("rax");
+    }
+    else if (node->lhs)
     {
         gen_expr(node->lhs);
         pop("rax");
@@ -95,8 +96,41 @@ void gen_expr(Node *node)
         println("  imul rax, rdi");
         break;
     case NK_DIV:
-        println("  cqo"); // Set sign-extend of rax to rdx:rax.
+        println("  cqo");      // Set sign-extend of rax to rdx:rax.
         println("  idiv rdi"); // Signed divide rdx:rax by rdi.
+        break;
+    case NK_EQ:
+    case NK_NE:
+    case NK_LT:
+    case NK_LE:
+    case NK_GT:
+    case NK_GE:
+        println("  cmp rax, rdi");
+        if (node->kind == NK_EQ)
+        {
+            println("  sete al");
+        }
+        else if (node->kind == NK_NE)
+        {
+            println("  setne al");
+        }
+        else if (node->kind == NK_LT)
+        {
+            println("  setl al");
+        }
+        else if (node->kind == NK_LE)
+        {
+            println("  setle al");
+        }
+        else if (node->kind == NK_GT)
+        {
+            println("  setg al");
+        }
+        else if (node->kind == NK_GE)
+        {
+            println("  setge al");
+        }
+        println("  movzb rax, al");
         break;
     case NK_NEG:
         println("  neg rax");

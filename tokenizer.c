@@ -16,11 +16,20 @@ static Token *new_token(TokenKind kind, char *str, int len)
     return tok;
 }
 
+static bool starts_with(const char *p, const char *prefix)
+{
+    return memcmp(p, prefix, strlen(prefix)) == 0;
+}
+
 // is_punct returns the length of the punctuator at p.
 // It returns 0 if p does not point a valid punctuator.
 static int is_punct(char *p)
 {
-    if (strchr("+-*/();=", *p))
+    if (starts_with(p, "==") || starts_with(p, "!=") || starts_with(p, "<=") || starts_with(p, ">="))
+    {
+        return 2;
+    }
+    if (strchr("+-*/();=<>", *p))
     {
         return 1;
     }

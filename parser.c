@@ -30,7 +30,21 @@ char *node_kind_name(NodeKind kind)
         return "ASSIGN";
     case NK_LVAR:
         return "LVAR";
+    case NK_EQ:
+        return "EQ";
+    case NK_NE:
+        return "NE";
+    case NK_LT:
+        return "LT";
+    case NK_LE:
+        return "LE";
+    case NK_GT:
+        return "GT";
+    case NK_GE:
+        return "GE";
     }
+
+    return "UNKNOWN";
 }
 
 bool equal(Token *tok, char *op)
@@ -138,6 +152,8 @@ static Node *new_lvar_node(Token *tok)
 Node *stmt(Token *tok, Token **end);
 Node *expr(Token *tok, Token **end);
 Node *assign(Token *tok, Token **end);
+Node *equality(Token *tok, Token **end);
+Node *relational(Token *tok, Token **end);
 Node *add(Token *tok, Token **end);
 Node *mul(Token *tok, Token **end);
 Node *unary(Token *tok, Token **end);
@@ -161,14 +177,71 @@ Node *expr(Token *tok, Token **end)
 }
 
 // assign
-//  = add (= assign)?
+//  = equality (= assign)?
 Node *assign(Token *tok, Token **end)
 {
-    Node *node = add(tok, &tok);
+    Node *node = equality(tok, &tok);
     if (consume(tok, &tok, "="))
     {
         node = new_binary(NK_ASSIGN, tok, node, assign(tok, &tok));
     }
+    *end = tok;
+    return node;
+}
+
+// equality
+//  = relational ("==" relational | "!=" relational)*
+Node *equality(Token *tok, Token **end)
+{
+    Node *node = relational(tok, &tok);
+    for (;;)
+    {
+        if (consume(tok, &tok, "=="))
+        {
+            node = new_binary(NK_EQ, tok, node, relational(tok, &tok));
+            continue;
+        }
+        if (consume(tok, &tok, "!="))
+        {
+            node = new_binary(NK_NE, tok, node, relational(tok, &tok));
+            continue;
+        }
+        break;
+    }
+
+    *end = tok;
+    return node;
+}
+
+// relational
+//  = add ("<" add | "<=" add | ">" add | ">=" add)*
+Node *relational(Token *tok, Token **end)
+{
+    Node *node = add(tok, &tok);
+    for (;;)
+    {
+        if (consume(tok, &tok, "<"))
+        {
+            node = new_binary(NK_LT, tok, node, add(tok, &tok));
+        }
+        else if (consume(tok, &tok, "<="))
+        {
+            node = new_binary(NK_LE, tok, node, add(tok, &tok));
+        }
+        if (consume(tok, &tok, ">"))
+        {
+            node = new_binary(NK_GT, tok, node, add(tok, &tok));
+        }
+        else if (consume(tok, &tok, ">="))
+        {
+            node = new_binary(NK_GE, tok, node, add(tok, &tok));
+        }
+        else
+        {
+            break;
+        }
+    }
+
     *end = tok;
     return node;
 }

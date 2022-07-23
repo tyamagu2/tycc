@@ -51,6 +51,12 @@ typedef enum
     NK_EXPR_STMT, // Expression statement
     NK_ASSIGN,    // Assignment
     NK_LVAR,      // Local variable
+    NK_EQ,        // ==
+    NK_NE,        // !=
+    NK_LT,        // <
+    NK_LE,        // <=
+    NK_GT,        // >
+    NK_GE,        // >=
 } NodeKind;
 
 typedef struct Node Node;
