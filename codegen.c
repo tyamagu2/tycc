@@ -141,6 +141,8 @@ void gen_expr(Node *node)
     case NK_NEG:
         println("  neg rax");
         break;
+    default:
+        error_node(node, "unknown expression");
     }
 
     push("rax");
@@ -213,7 +215,15 @@ void gen_stmt(Node *node)
     }
     case NK_EXPR_STMT:
         gen_expr(node->lhs);
-        break;
+        return;
+    case NK_BLOCK:
+        for (Node *cur = node->body; cur; cur = cur->next)
+        {
+            gen_stmt(cur);
+        }
+        return;
+    default:
+        error_node(node, "unknown statement");
     }
 }
 

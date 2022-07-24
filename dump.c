@@ -69,6 +69,13 @@ void dump_node(Node *node, int depth, char *prefix)
         puts(node_kind_name(node->kind));
         dump_node(node->lhs, depth + 1, "EXPR: ");
         return;
+    case NK_BLOCK:
+        puts(node_kind_name(node->kind));
+        for (Node *n = node->body; n; n = n->next)
+        {
+            dump_node(n, depth + 1, "");
+        }
+        return;
     case NK_EXPR_STMT:
         dump_node(node->lhs, depth, "EXPR_STMT: ");
         return;

@@ -61,10 +61,11 @@ typedef enum
     NK_LE,        // <=
     NK_GT,        // >
     NK_GE,        // >=
-    NK_RETURN,    // return
-    NK_IF,        // if
-    NK_FOR,       // for
-    NK_WHILE      // while
+    NK_RETURN,    // return stmt
+    NK_IF,        // if stmt
+    NK_FOR,       // for stmt
+    NK_WHILE,     // while stmt
+    NK_BLOCK,     // Block
 } NodeKind;
 
 typedef struct Node Node;
@@ -77,6 +78,9 @@ struct Node
 
     Node *lhs; // Left-hand side
     Node *rhs; // Right-hand side
+
+    // For NK_BLOCK
+    Node *body;
 
     // For NK_IF, NK_FOR and NK_WHILE
     Node *init;

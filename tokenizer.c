@@ -59,7 +59,7 @@ static int is_punct(char *p)
     {
         return 2;
     }
-    if (strchr("+-*/();=<>", *p))
+    if (strchr("+-*/();=<>{}", *p))
     {
         return 1;
     }

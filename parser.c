@@ -50,6 +50,8 @@ char *node_kind_name(NodeKind kind)
         return "FOR";
     case NK_WHILE:
         return "WHILE";
+    case NK_BLOCK:
+        return "BLOCK";
     }
 
     return "UNKNOWN";
@@ -186,6 +188,7 @@ Node *stmt(Token *tok, Token **end);
 Node *if_stmt(Token *tok, Token **end);
 Node *for_stmt(Token *tok, Token **end);
 Node *while_stmt(Token *tok, Token **end);
+Node *compound_stmt(Token *tok, Token **end);
 Node *expr(Token *tok, Token **end);
 Node *assign(Token *tok, Token **end);
 Node *equality(Token *tok, Token **end);
@@ -200,7 +203,8 @@ Node *primary(Token *tok, Token **end);
 //  | if_stmt
 //  | for_stmt
 //  | while_stmt
-//  | expr ";"
+//  | "{" stmt* "}"
+//  | expr? ";"
 Node *stmt(Token *tok, Token **end)
 {
     if (consume_keyword(tok, &tok, "return"))
@@ -222,6 +226,19 @@ Node *stmt(Token *tok, Token **end)
     if (equal_keyword(tok, "while"))
     {
         return while_stmt(tok, end);
+    }
+
+    if (equal(tok, "{"))
+    {
+        return compound_stmt(tok, end);
+    }
+
+    if (equal(tok, ";"))
+    {
+        Node *node = new_node(NK_BLOCK, tok);
+        consume(tok, &tok, ";");
+        *end = tok;
+        return node;
     }
 
     Node *node = new_unary(NK_EXPR_STMT, tok, expr(tok, &tok));
@@ -296,6 +313,25 @@ Node *while_stmt(Token *tok, Token **end)
     node->cond = expr(tok, &tok);
     expect(tok, &tok, ")");
     node->then = stmt(tok, &tok);
+
+    *end = tok;
+    return node;
+}
+
+Node *compound_stmt(Token *tok, Token **end)
+{
+    Node *node = new_node(NK_BLOCK, tok);
+    Node head = {};
+    Node *cur = &head;
+
+    expect(tok, &tok, "{");
+    while (!equal(tok, "}"))
+    {
+        cur = cur->next = stmt(tok, &tok);
+    }
+    expect(tok, &tok, "}");
+
+    node->body = head.next;
 
     *end = tok;
     return node;
