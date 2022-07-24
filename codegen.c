@@ -174,6 +174,30 @@ void gen_stmt(Node *node)
         println(".L.end%d:", c);
         return;
     }
+    case NK_FOR:
+    {
+        if (node->init)
+        {
+            gen_expr(node->init);
+        }
+        int c = count();
+        println(".L.begin%d:", c);
+        if (node->cond)
+        {
+            gen_expr(node->cond);
+            pop("rax");
+            println("  cmp rax, 0");
+            println("  je .L.end%d", c);
+        }
+        gen_stmt(node->then);
+        if (node->inc)
+        {
+            gen_expr(node->inc);
+        }
+        println("  jmp .L.begin%d", c);
+        println(".L.end%d:", c);
+        return;
+    }
     case NK_WHILE:
     {
         int c = count();

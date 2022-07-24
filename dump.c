@@ -81,6 +81,22 @@ void dump_node(Node *node, int depth, char *prefix)
             dump_node(node->els, depth + 1, "ELSE: ");
         }
         return;
+    case NK_FOR:
+        puts(node_kind_name(node->kind));
+        if (node->init)
+        {
+            dump_node(node->init, depth + 1, "INIT: ");
+        }
+        if (node->cond)
+        {
+            dump_node(node->cond, depth + 1, "COND: ");
+        }
+        if (node->inc)
+        {
+            dump_node(node->inc, depth + 1, "INC: ");
+        }
+        dump_node(node->then, depth + 1, "THEN: ");
+        return;
     case NK_WHILE:
         puts(node_kind_name(node->kind));
         dump_node(node->cond, depth + 1, "COND: ");

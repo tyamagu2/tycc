@@ -46,6 +46,8 @@ char *node_kind_name(NodeKind kind)
         return "RETURN";
     case NK_IF:
         return "IF";
+    case NK_FOR:
+        return "FOR";
     case NK_WHILE:
         return "WHILE";
     }
@@ -182,6 +184,7 @@ static Node *new_lvar_node(Token *tok)
 
 Node *stmt(Token *tok, Token **end);
 Node *if_stmt(Token *tok, Token **end);
+Node *for_stmt(Token *tok, Token **end);
 Node *while_stmt(Token *tok, Token **end);
 Node *expr(Token *tok, Token **end);
 Node *assign(Token *tok, Token **end);
@@ -195,6 +198,7 @@ Node *primary(Token *tok, Token **end);
 // stmt
 //  = "return" expr ";"
 //  | if_stmt
+//  | for_stmt
 //  | while_stmt
 //  | expr ";"
 Node *stmt(Token *tok, Token **end)
@@ -210,6 +214,10 @@ Node *stmt(Token *tok, Token **end)
     if (equal_keyword(tok, "if"))
     {
         return if_stmt(tok, end);
+    }
+    if (equal_keyword(tok, "for"))
+    {
+        return for_stmt(tok, end);
     }
     if (equal_keyword(tok, "while"))
     {
@@ -237,6 +245,41 @@ Node *if_stmt(Token *tok, Token **end)
     {
         node->els = stmt(tok, &tok);
     }
+
+    *end = tok;
+    return node;
+}
+
+// for_stmt
+//  = "for" "(" expr? ";" expr? ";" expr? ")" stmt
+Node *for_stmt(Token *tok, Token **end)
+{
+    Node *node = new_node(NK_FOR, tok);
+
+    expect_keyword(tok, &tok, "for");
+
+    expect(tok, &tok, "(");
+
+    if (!equal(tok, ";"))
+    {
+        node->init = expr(tok, &tok);
+    }
+    expect(tok, &tok, ";");
+
+    if (!equal(tok, ";"))
+    {
+        node->cond = expr(tok, &tok);
+    }
+    expect(tok, &tok, ";");
+
+    if (!equal(tok, ")"))
+    {
+        node->inc = expr(tok, &tok);
+    }
+
+    expect(tok, &tok, ")");
+
+    node->then = stmt(tok, &tok);
 
     *end = tok;
     return node;
