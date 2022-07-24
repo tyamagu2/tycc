@@ -66,6 +66,7 @@ typedef enum
     NK_FOR,       // for stmt
     NK_WHILE,     // while stmt
     NK_BLOCK,     // Block
+    NK_FUNCCALL,  // Function call
 } NodeKind;
 
 typedef struct Node Node;
@@ -94,6 +95,9 @@ struct Node
 
     // For NK_LVAR
     LVar *lvar;
+
+    // For NK_FUNCCALL
+    char *funcname;
 };
 
 typedef struct Function

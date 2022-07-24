@@ -75,6 +75,11 @@ void gen_expr(Node *node)
         println("  mov [rax], rdi");
         push("rdi");
         return;
+    case NK_FUNCCALL:
+        println("  mov rax, 0");
+        println("  call %s", node->funcname);
+        push("rax");
+        return;
     }
 
     if (node->lhs && node->rhs)

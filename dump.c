@@ -112,6 +112,9 @@ void dump_node(Node *node, int depth, char *prefix)
     case NK_LVAR:
         printf("LVAR(%.*s)\n", node->token->len, node->token->str);
         return;
+    case NK_FUNCCALL:
+        printf("%s (%s)\n", node_kind_name(node->kind), node->funcname);
+        return;
     default:
         printf("INVALID_NODE_KIND=%d\n", node->kind);
     }

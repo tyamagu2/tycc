@@ -52,6 +52,8 @@ char *node_kind_name(NodeKind kind)
         return "WHILE";
     case NK_BLOCK:
         return "BLOCK";
+    case NK_FUNCCALL:
+        return "FUNCCALL";
     }
 
     return "UNKNOWN";
@@ -184,6 +186,14 @@ static Node *new_lvar_node(Token *tok)
     return node;
 }
 
+char *strndup(const char *src, size_t len)
+{
+    char *dst = malloc(len + 1);
+    dst['0'];
+    memcpy(dst, src, len);
+    return dst;
+}
+
 Node *stmt(Token *tok, Token **end);
 Node *if_stmt(Token *tok, Token **end);
 Node *for_stmt(Token *tok, Token **end);
@@ -197,6 +207,7 @@ Node *add(Token *tok, Token **end);
 Node *mul(Token *tok, Token **end);
 Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
+Node *funccall(Token *tok, Token **end);
 
 // stmt
 //  = "return" expr ";"
@@ -483,6 +494,7 @@ Node *unary(Token *tok, Token **end)
 // primary
 //  = num
 //  | ident
+//  | funccall
 //  | "(" expr ")"
 Node *primary(Token *tok, Token **end)
 {
@@ -494,6 +506,11 @@ Node *primary(Token *tok, Token **end)
     }
     if (tok->kind == TK_IDENT)
     {
+        if (equal(tok->next, "("))
+        {
+            return funccall(tok, end);
+        }
+
         Node *node = new_lvar_node(tok);
         *end = tok->next;
         return node;
@@ -502,6 +519,28 @@ Node *primary(Token *tok, Token **end)
     expect(tok, &tok, "(");
     Node *node = expr(tok, &tok);
     expect(tok, &tok, ")");
+    *end = tok;
+    return node;
+}
+
+// funccall
+//  = ident args?
+//
+// args
+//  = "(" ")"
+Node *funccall(Token *tok, Token **end)
+{
+    if (tok->kind != TK_IDENT)
+    {
+        error_token(tok, "expected an ident");
+    }
+
+    Node *node = new_node(NK_FUNCCALL, tok);
+    node->funcname = strndup(tok->str, tok->len);
+    tok = tok->next;
+    expect(tok, &tok, "(");
+    expect(tok, &tok, ")");
+    
     *end = tok;
     return node;
 }
