@@ -114,6 +114,10 @@ void dump_node(Node *node, int depth, char *prefix)
         return;
     case NK_FUNCCALL:
         printf("%s (%s)\n", node_kind_name(node->kind), node->funcname);
+        for (Node *arg = node->args; arg; arg = arg->next)
+        {
+            dump_node(arg, depth+1, "");
+        }
         return;
     default:
         printf("INVALID_NODE_KIND=%d\n", node->kind);

@@ -72,3 +72,5 @@ assert 3 '{ for (;;) {return 3;} return 5; }'
 assert 3 'for (i = 0;;) { i = i + 1; i = i + 2; return i;}'
 
 assert 7 'a = 1 + ret1(); return a + ret5();'
+assert 91 'return arg6(1,2,3,4,5,6);'
+assert 147 'a = arg6(1,2,3,4,5,6); return a + arg6(6,5,4,3,2,1);'

@@ -3,6 +3,9 @@
 cat <<EOF | cc -x c -c -o tmp2.o -
 int ret1() { return 1; }
 int ret5() { return 5; }
+int arg6(int a, int b, int c, int d, int e, int f) { 
+  return 1*a + 2*b + 3*c + 4*d + 5*e + 6*f;
+}
 EOF
 
 assert() {

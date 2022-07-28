@@ -54,6 +54,8 @@ void push_lvar_addr(Node *node)
     push("rax");
 }
 
+static const char *argregs[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 void gen_expr(Node *node)
 {
     switch (node->kind)
@@ -76,10 +78,22 @@ void gen_expr(Node *node)
         push("rdi");
         return;
     case NK_FUNCCALL:
+    {
+        int ai = 0;
+        for (Node *arg = node->args; arg; arg = arg->next)
+        {
+            if (ai > sizeof(argregs)/sizeof(const char*)) {
+                error_node(node, "too many arguments passed");
+            }
+            gen_expr(arg);
+            pop("rax");
+            println("  mov %s, rax", argregs[ai++]);
+        }
         println("  mov rax, 0");
         println("  call %s", node->funcname);
         push("rax");
         return;
+    }
     }
 
     if (node->lhs && node->rhs)

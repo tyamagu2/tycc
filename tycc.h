@@ -98,6 +98,7 @@ struct Node
 
     // For NK_FUNCCALL
     char *funcname;
+    Node *args;
 };
 
 typedef struct Function

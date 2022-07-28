@@ -527,7 +527,7 @@ Node *primary(Token *tok, Token **end)
 //  = ident args?
 //
 // args
-//  = "(" ")"
+//  = "(" expr? ("," expr)* ")"
 Node *funccall(Token *tok, Token **end)
 {
     if (tok->kind != TK_IDENT)
@@ -539,8 +539,23 @@ Node *funccall(Token *tok, Token **end)
     node->funcname = strndup(tok->str, tok->len);
     tok = tok->next;
     expect(tok, &tok, "(");
+
+    Node head = {};
+    Node *cur = &head;
+    if (!equal(tok, ")"))
+    {
+        cur = cur->next = expr(tok, &tok);
+    }
+    while (!equal(tok, ")"))
+    {
+        expect(tok, &tok, ",");
+        cur = cur->next = expr(tok, &tok);
+    }
+
     expect(tok, &tok, ")");
-    
+
+    node->args = head.next;
+
     *end = tok;
     return node;
 }
