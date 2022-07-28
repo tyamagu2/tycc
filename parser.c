@@ -115,6 +115,17 @@ void expect_keyword(Token *tok, Token **end, char *kw)
     }
 }
 
+Token *expect_ident(Token *tok, Token **end)
+{
+    if (tok->kind != TK_IDENT)
+    {
+        error_token(tok, "expected an ident");
+    }
+    Token *ret = tok;
+    *end = tok->next;
+    return ret;
+}
+
 Node *new_node(NodeKind kind, Token *tok)
 {
     Node *node = calloc(1, sizeof(Node));
@@ -194,6 +205,7 @@ char *strndup(const char *src, size_t len)
     return dst;
 }
 
+Node *funcdecl(Token *tok, Token **end);
 Node *stmt(Token *tok, Token **end);
 Node *if_stmt(Token *tok, Token **end);
 Node *for_stmt(Token *tok, Token **end);
@@ -208,6 +220,36 @@ Node *mul(Token *tok, Token **end);
 Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 Node *funccall(Token *tok, Token **end);
+
+// funcdecl
+//  = ident "(" ")" "{" stmt* "}"
+Node *funcdecl(Token *tok, Token **end)
+{
+    locals = NULL;
+
+    Token *nt = expect_ident(tok, &tok);
+    Node *node = new_node(NK_FUNCDECL, nt);
+    node->funcname = strndup(nt->str, nt->len);
+
+    expect(tok, &tok, "(");
+    expect(tok, &tok, ")");
+    expect(tok, &tok, "{");
+
+    Node head = {};
+    Node *cur = &head;
+    while (!equal(tok, "}"))
+    {
+        cur = cur->next = stmt(tok, &tok);
+    }
+
+    expect(tok, &tok, "}");
+
+    node->body = head.next;
+    node->locals = locals;
+
+    *end = tok;
+    return node;
+}
 
 // stmt
 //  = "return" expr ";"
@@ -530,14 +572,10 @@ Node *primary(Token *tok, Token **end)
 //  = "(" expr? ("," expr)* ")"
 Node *funccall(Token *tok, Token **end)
 {
-    if (tok->kind != TK_IDENT)
-    {
-        error_token(tok, "expected an ident");
-    }
+    Token *nt = expect_ident(tok, &tok);
+    Node *node = new_node(NK_FUNCCALL, nt);
+    node->funcname = strndup(nt->str, nt->len);
 
-    Node *node = new_node(NK_FUNCCALL, tok);
-    node->funcname = strndup(tok->str, tok->len);
-    tok = tok->next;
     expect(tok, &tok, "(");
 
     Node head = {};
@@ -560,7 +598,7 @@ Node *funccall(Token *tok, Token **end)
     return node;
 }
 
-Function *parse(Token *tok)
+Program *parse(Token *tok)
 {
     _start = tok;
 
@@ -568,12 +606,11 @@ Function *parse(Token *tok)
     Node *cur = &head;
     while (tok->kind != TK_EOF)
     {
-        cur = cur->next = stmt(tok, &tok);
+        cur = cur->next = funcdecl(tok, &tok);
     }
 
-    // For now, treat as if everything is inside the main function.
-    Function *f = calloc(1, sizeof(Function));
-    f->body = head.next;
-    f->locals = locals;
-    return f;
+    Program *prg = calloc(1, sizeof(Program));
+    prg->nodes = head.next;
+
+    return prg;
 }

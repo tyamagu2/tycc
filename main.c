@@ -19,7 +19,7 @@ int main(int argc, char **argv)
         dump_tokens(tok);
     }
 
-    Function *prog = parse(tok);
+    Program *prog = parse(tok);
     if (dump)
     {
         dump_nodes(prog);

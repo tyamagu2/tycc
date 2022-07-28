@@ -67,6 +67,7 @@ typedef enum
     NK_WHILE,     // while stmt
     NK_BLOCK,     // Block
     NK_FUNCCALL,  // Function call
+    NK_FUNCDECL,  // Funciton declaration
 } NodeKind;
 
 typedef struct Node Node;
@@ -80,7 +81,7 @@ struct Node
     Node *lhs; // Left-hand side
     Node *rhs; // Right-hand side
 
-    // For NK_BLOCK
+    // For NK_BLOCK and NK_FUNCDECL
     Node *body;
 
     // For NK_IF, NK_FOR and NK_WHILE
@@ -96,32 +97,32 @@ struct Node
     // For NK_LVAR
     LVar *lvar;
 
-    // For NK_FUNCCALL
+    // For NK_FUNCCALL and NK_FUNCDECL
     char *funcname;
     Node *args;
+    LVar *locals;
 };
 
-typedef struct Function
+typedef struct Program
 {
-    Node *body;
-    LVar *locals;
-} Function;
+    Node *nodes;
+} Program;
 
-Function *parse(Token *tok);
+Program *parse(Token *tok);
 char *node_kind_name(NodeKind kind);
 
 //
 // Codegen
 //
 
-void codegen(Function *prog);
+void codegen(Program *prog);
 
 //
 // Dumper
 //
 
 void dump_tokens(Token *tok);
-void dump_nodes(Function *prog);
+void dump_nodes(Program *prog);
 
 //
 // Error reporting

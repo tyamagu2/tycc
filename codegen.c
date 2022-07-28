@@ -246,7 +246,7 @@ void gen_stmt(Node *node)
     }
 }
 
-static int assign_lvar_offset(Function *f)
+static int assign_lvar_offset(Node *f)
 {
     int offset = 0;
     for (LVar *v = f->locals; v; v = v->next)
@@ -257,19 +257,17 @@ static int assign_lvar_offset(Function *f)
     return offset;
 }
 
-void codegen(Function *prog)
+void gen_funcdecl(Node *f)
 {
-    println(".intel_syntax noprefix");
-    println(".globl main");
-    println("main:");
+    println("%s:", f->funcname);
 
     // Prologue
     push("rbp"); // rbp is a callee-saved register and its value must be preserved.
     println("  mov rbp, rsp");
-    int offset = assign_lvar_offset(prog);
+    int offset = assign_lvar_offset(f);
     println("  sub rsp, %d", offset);
 
-    Node *node = prog->body;
+    Node *node = f->body;
     while (node)
     {
         gen_stmt(node);
@@ -281,4 +279,15 @@ void codegen(Function *prog)
     println("  mov rsp, rbp");
     pop("rbp"); // Restore rbp.
     println("  ret");
+}
+
+void codegen(Program *prog)
+{
+    println(".intel_syntax noprefix");
+    println(".globl main");
+
+    for (Node *f = prog->nodes; f; f = f->next)
+    {
+        gen_funcdecl(f);
+    }
 }
