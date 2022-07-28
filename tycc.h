@@ -103,26 +103,31 @@ struct Node
     LVar *locals;
 };
 
-typedef struct Program
-{
-    Node *nodes;
-} Program;
+typedef struct Function Function;
 
-Program *parse(Token *tok);
+struct Function
+{
+    Function *next;
+    char *name;
+    Node *body;
+    LVar *locals;
+};
+
+Function *parse(Token *tok);
 char *node_kind_name(NodeKind kind);
 
 //
 // Codegen
 //
 
-void codegen(Program *prog);
+void codegen(Function *prog);
 
 //
 // Dumper
 //
 
 void dump_tokens(Token *tok);
-void dump_nodes(Program *prog);
+void dump_nodes(Function *prog);
 
 //
 // Error reporting

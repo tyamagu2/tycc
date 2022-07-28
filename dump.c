@@ -135,22 +135,20 @@ void dump_node(Node *node, int depth, char *prefix)
     }
 }
 
-void dump_nodes(Program *prog)
+void dump_nodes(Function *prog)
 {
-    for (Node *f = prog->nodes; f; f = f->next)
+    for (Function *f = prog; f; f = f->next)
     {
-        printf("FUNCDECL (%s)\n", f->funcname);
-        puts("----STMTS----");
+        printf("FUNCTION (%s)\n", f->name);
+        puts("----BODY----");
         Node *node = f->body;
         while (node)
         {
             dump_node(node, 0, "");
             node = node->next;
         }
-        puts("-------------");
-
         puts("----LVARS----");
-        LVar *lvar = f->lvar;
+        LVar *lvar = f->locals;
         while (lvar)
         {
             printf("%.*s\n", lvar->len, lvar->name);

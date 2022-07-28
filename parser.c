@@ -205,7 +205,7 @@ char *strndup(const char *src, size_t len)
     return dst;
 }
 
-Node *funcdecl(Token *tok, Token **end);
+Function *function(Token *tok, Token **end);
 Node *stmt(Token *tok, Token **end);
 Node *if_stmt(Token *tok, Token **end);
 Node *for_stmt(Token *tok, Token **end);
@@ -221,15 +221,13 @@ Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 Node *funccall(Token *tok, Token **end);
 
-// funcdecl
+// function
 //  = ident "(" ")" "{" stmt* "}"
-Node *funcdecl(Token *tok, Token **end)
+Function *function(Token *tok, Token **end)
 {
     locals = NULL;
 
     Token *nt = expect_ident(tok, &tok);
-    Node *node = new_node(NK_FUNCDECL, nt);
-    node->funcname = strndup(nt->str, nt->len);
 
     expect(tok, &tok, "(");
     expect(tok, &tok, ")");
@@ -244,11 +242,13 @@ Node *funcdecl(Token *tok, Token **end)
 
     expect(tok, &tok, "}");
 
-    node->body = head.next;
-    node->locals = locals;
+    Function *f = calloc(1, sizeof(Function));
+    f->name = strndup(nt->str, nt->len);
+    f->body = head.next;
+    f->locals = locals;
 
     *end = tok;
-    return node;
+    return f;
 }
 
 // stmt
@@ -598,19 +598,16 @@ Node *funccall(Token *tok, Token **end)
     return node;
 }
 
-Program *parse(Token *tok)
+Function *parse(Token *tok)
 {
     _start = tok;
 
-    Node head;
-    Node *cur = &head;
+    Function head;
+    Function *cur = &head;
     while (tok->kind != TK_EOF)
     {
-        cur = cur->next = funcdecl(tok, &tok);
+        cur = cur->next = function(tok, &tok);
     }
 
-    Program *prg = calloc(1, sizeof(Program));
-    prg->nodes = head.next;
-
-    return prg;
+    return head.next;
 }
