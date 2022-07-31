@@ -140,19 +140,27 @@ void dump_nodes(Function *prog)
     for (Function *f = prog; f; f = f->next)
     {
         printf("FUNCTION (%s)\n", f->name);
+        if (f->params)
+        {
+            puts("---PARAMS---");
+            for (LVar *p = f->params; p; p = p->next)
+            {
+                printf("%.*s\n", p->len, p->name);
+            }
+        }
         puts("----BODY----");
         Node *node = f->body;
-        while (node)
+        for (Node *node = f->body; node; node = node->next)
         {
             dump_node(node, 0, "");
-            node = node->next;
         }
-        puts("----LVARS----");
-        LVar *lvar = f->locals;
-        while (lvar)
+        if (f->locals)
         {
-            printf("%.*s\n", lvar->len, lvar->name);
-            lvar = lvar->next;
+            puts("----LVARS----");
+            for (LVar *lvar = f->locals; lvar && lvar != f->params; lvar = lvar->next)
+            {
+                printf("%.*s\n", lvar->len, lvar->name);
+            }
         }
         puts("-------------");
     }

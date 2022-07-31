@@ -18,6 +18,11 @@ static void error_node(Node *node, char *msg)
     error("%s: %s(%.*s)", msg, node_kind_name(node->kind), node->token->len, node->token->str);
 }
 
+int smallest_multiple(int n, int m)
+{
+    return (n + m - 1) / m * m;
+}
+
 static int count()
 {
     static int cnt;
@@ -265,7 +270,14 @@ void gen_function(Function *f)
     push("rbp"); // rbp is a callee-saved register and its value must be preserved.
     println("  mov rbp, rsp");
     int offset = assign_lvar_offset(f);
-    println("  sub rsp, %d", offset);
+    println("  sub rsp, %d", smallest_multiple(offset, 16));
+
+    // Set parameter values.
+    int pi = 0;
+    for (LVar *p = f->params; p; p = p->next)
+    {
+        println("  mov [rbp - %d], %s", p->offset, argregs[pi++]);
+    }
 
     Node *node = f->body;
     while (node)

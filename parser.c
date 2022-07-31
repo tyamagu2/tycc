@@ -121,9 +121,8 @@ Token *expect_ident(Token *tok, Token **end)
     {
         error_token(tok, "expected an ident");
     }
-    Token *ret = tok;
     *end = tok->next;
-    return ret;
+    return tok;
 }
 
 Node *new_node(NodeKind kind, Token *tok)
@@ -168,6 +167,7 @@ static LVar *new_lvar(Token *tok)
     // Prepend lvar to locals.
     lvar->next = locals;
     locals = lvar;
+
     return lvar;
 }
 
@@ -221,15 +221,51 @@ Node *unary(Token *tok, Token **end);
 Node *primary(Token *tok, Token **end);
 Node *funccall(Token *tok, Token **end);
 
+// funcparams
+//  = ident? ("," ident)*
+void funcparams_to_lvars(Token *tok, Token **end)
+{
+    bool first = true;
+    while (!equal(tok, ")"))
+    {
+        if (!first)
+        {
+            expect(tok, &tok, ",");
+        }
+        new_lvar(expect_ident(tok, &tok));
+        first = false;
+    }
+
+    // Reverse locals to maintain original parameter orders.
+    // TODO: refactor
+    LVar *prev = NULL;
+    LVar *cur = locals;
+    while (cur)
+    {
+        LVar *tmp = cur->next;
+        cur->next = prev;
+        prev = cur;
+        cur = tmp;
+    }
+    locals = prev;
+
+    *end = tok;
+}
+
 // function
-//  = ident "(" ")" "{" stmt* "}"
+//  = ident "(" params ")" "{" stmt* "}"
 Function *function(Token *tok, Token **end)
 {
+    Function *f = calloc(1, sizeof(Function));
     locals = NULL;
 
     Token *nt = expect_ident(tok, &tok);
 
     expect(tok, &tok, "(");
+
+    funcparams_to_lvars(tok, &tok);
+    f->params = locals;
+
     expect(tok, &tok, ")");
     expect(tok, &tok, "{");
 
@@ -239,13 +275,11 @@ Function *function(Token *tok, Token **end)
     {
         cur = cur->next = stmt(tok, &tok);
     }
-
     expect(tok, &tok, "}");
 
-    Function *f = calloc(1, sizeof(Function));
     f->name = strndup(nt->str, nt->len);
     f->body = head.next;
-    f->locals = locals;
+    f->locals = locals; // local vars are prepended to params.
 
     *end = tok;
     return f;
@@ -580,13 +614,12 @@ Node *funccall(Token *tok, Token **end)
 
     Node head = {};
     Node *cur = &head;
-    if (!equal(tok, ")"))
-    {
-        cur = cur->next = expr(tok, &tok);
-    }
     while (!equal(tok, ")"))
     {
-        expect(tok, &tok, ",");
+        if (cur != &head)
+        {
+            expect(tok, &tok, ",");
+        }
         cur = cur->next = expr(tok, &tok);
     }
 

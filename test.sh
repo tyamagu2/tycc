@@ -72,5 +72,7 @@ assert 3 'main() { { for (;;) {return 3;} return 5; }}'
 assert 3 'main() { for (i = 0;;) { i = i + 1; i = i + 2; return i;}}'
 
 assert 7 'main() { a = 1 + ret1(); return a + ret5();} ret1() { return 1;} ret5() {return 5;}'
-assert 91 'main() { return arg6(1,2,3,4,5,6);}'
-assert 147 'main() { a = arg6(1,2,3,4,5,6); return a + arg6(6,5,4,3,2,1);}'
+assert 91 'main() { return arg6(1,2,3,4,5,6);} arg6(a, b, c, d, e, f) {return 1*a + 2*b + 3*c + 4*d + 5*e + 6*f;}'
+assert 147 'main() { a = arg6(1,2,3,4,5,6); return a + arg6(6,5,4,3,2,1);} arg6(a, b, c, d, e, f) {return 1*a + 2*b + 3*c + 4*d + 5*e + 6*f;}'
+
+assert 55 'main(){return fib(10);} fib(n){if (n<=1) return n; return fib(n-1) + fib(n-2);}'
